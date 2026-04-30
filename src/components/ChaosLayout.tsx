@@ -50,7 +50,7 @@ export const ChaosLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         </div>
 
         {/* Main Game Area */}
-        <main className="flex-1 bg-[#222] relative chaotic-border m-2 overflow-auto custom-scrollbar flex flex-col">
+        <main className="flex-1 bg-[#222] relative chaotic-border m-2 overflow-auto custom-scrollbar flex flex-col animate-chaos-bg shadow-inner main-viewport-scale">
            {children}
         </main>
 

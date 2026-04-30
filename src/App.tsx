@@ -49,6 +49,7 @@ const FloatingButton = () => {
 export default function App() {
   return (
     <CasinoProvider>
+      <div className="fixed inset-0 z-[-1] animate-chaos-bg opacity-30 pointer-events-none" />
       <CursorTrail />
       <ChaosLayout>
         <div className="flex flex-col items-center justify-start min-h-full py-10 relative">

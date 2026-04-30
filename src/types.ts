@@ -5,6 +5,12 @@ export interface GameState {
   totalSpins: number;
   lastWinAmount: number;
   isNauseous: boolean; // For visual effects
+  winStreak: number;
+  user: {
+    uid: string;
+    email: string | null;
+    photoURL: string | null;
+  } | null;
 }
 
 export interface Promotion {

@@ -1,0 +1,39 @@
+{
+  "entities": {
+    "Withdrawal": {
+      "title": "Withdrawal Request",
+      "description": "A request to withdraw custom coins to a user's address",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "address": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "processed", "failed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "address", "amount", "status", "createdAt"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "User specific data including balance",
+      "type": "object",
+      "properties": {
+        "balance": { "type": "number" },
+        "totalSpins": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["balance", "totalSpins", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/withdrawals/{withdrawalId}": {
+      "schema": "Withdrawal",
+      "description": "Collection of withdrawal requests"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles"
+    }
+  }
+}

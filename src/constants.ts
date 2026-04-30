@@ -27,12 +27,12 @@ export const ADS = [
 export const WIN_SOUND_URL = 'https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3';
 export const LOSE_SOUND_URL = 'https://assets.mixkit.co/active_storage/sfx/2014/2014-preview.mp3';
 
-export const CHAOTIC_SOUNDS = [
-  'https://assets.mixkit.co/active_storage/sfx/1004/1004-preview.mp3', // Error/Zap
-  'https://assets.mixkit.co/active_storage/sfx/212/212-preview.mp3',   // Alert
-  'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3', // Distortion
-  'https://assets.mixkit.co/active_storage/sfx/2192/2192-preview.mp3', // Horn
-  'https://assets.mixkit.co/active_storage/sfx/2193/2193-preview.mp3', // Other Horn
-  'https://assets.mixkit.co/active_storage/sfx/1653/1653-preview.mp3', // Arcade sparkle
-  'https://assets.mixkit.co/active_storage/sfx/1505/1505-preview.mp3', // Wrong answer
+export const HARMONIOUS_SOUNDS = [
+  'https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3', // Bell 1
+  'https://assets.mixkit.co/active_storage/sfx/2017/2017-preview.mp3', // Bell 2
+  'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3', // Bell 3
+  'https://assets.mixkit.co/active_storage/sfx/1653/1653-preview.mp3', // Sparkle
+  'https://assets.mixkit.co/active_storage/sfx/611/611-preview.mp3',   // Soft chime
+  'https://assets.mixkit.co/active_storage/sfx/2635/2635-preview.mp3', // Dreamy sweep
+  'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3', // Keep one distortion but very quiet
 ];

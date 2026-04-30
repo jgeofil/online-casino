@@ -2,17 +2,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'motion/react';
 import { useCasino } from '../context/CasinoContext';
-import { Coins, Zap, Trophy, Bomb, Ghost, Heart, Rocket } from 'lucide-react';
-import { WIN_SOUND_URL, LOSE_SOUND_URL, CHAOTIC_SOUNDS } from '../constants';
+import { Coins, Zap, Trophy, Bomb, Ghost, Heart, Rocket, Wallet, LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import { WIN_SOUND_URL, LOSE_SOUND_URL, HARMONIOUS_SOUNDS } from '../constants';
+import { WithdrawModal } from './WithdrawModal';
+import { login, logout } from '../lib/firebase';
 
 const SYMBOLS = ['💎', '🍋', '🍒', '🔔', '7️⃣', '💰', '🔥', '💩', '🤑'];
 
 export const DopamineSlots: React.FC = () => {
-  const { state, spin, addCurrency } = useCasino();
+  const { state, spin } = useCasino();
   const [reels, setReels] = useState([0, 0, 0]);
   const [isSpinning, setIsSpinning] = useState(false);
   const [message, setMessage] = useState("INSERT COIN TO ASCEND");
   const [showConfirm, setShowConfirm] = useState(false);
+  const [hasAgreed, setHasAgreed] = useState(false);
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [multiplier, setMultiplier] = useState(1);
   const controls = useAnimation();
 
@@ -28,14 +32,19 @@ export const DopamineSlots: React.FC = () => {
 
   const handleSpin = async () => {
     if (isSpinning || state.balance < currentBet) return;
-    setShowConfirm(true);
+    if (hasAgreed) {
+      executeSpin();
+    } else {
+      setShowConfirm(true);
+    }
   };
 
   const executeSpin = async () => {
+    setHasAgreed(true);
     setShowConfirm(false);
     setIsSpinning(true);
     setMessage("PURCHASING DOPAMINE...");
-    playSound(CHAOTIC_SOUNDS[Math.floor(Math.random() * CHAOTIC_SOUNDS.length)], 0.2, 2);
+    playSound(HARMONIOUS_SOUNDS[Math.floor(Math.random() * HARMONIOUS_SOUNDS.length)], 0.2, 2);
 
     // Start reel animation
     const spinInterval = setInterval(() => {
@@ -45,7 +54,7 @@ export const DopamineSlots: React.FC = () => {
         Math.floor(Math.random() * SYMBOLS.length),
       ]);
       if (Math.random() > 0.95) {
-        playSound(CHAOTIC_SOUNDS[5], 0.1, 3); // Sparkle while spinning
+        playSound(HARMONIOUS_SOUNDS[3], 0.1, 3); // Sparkle while spinning
       }
     }, 50);
 
@@ -74,7 +83,7 @@ export const DopamineSlots: React.FC = () => {
         // Step 1: Show first two matches
         setReels([matchSym, matchSym, Math.floor(Math.random() * SYMBOLS.length)]);
         setMessage("OMG!!! SO CLOSE!!!!");
-        playSound(CHAOTIC_SOUNDS[1], 0.5, 0.5); // Slow alert
+        playSound(HARMONIOUS_SOUNDS[2], 0.5, 0.5); // Melodic bell
         
         // Step 2: Dramatic pause for the third reel
         setTimeout(() => {
@@ -82,7 +91,7 @@ export const DopamineSlots: React.FC = () => {
           setReels([matchSym, matchSym, failSym]);
           setMessage("ALMOST A BILLIONAIRE! TRY AGAIN!!");
           playSound(LOSE_SOUND_URL);
-          playSound(CHAOTIC_SOUNDS[6], 0.3, 1.5); // Wrong answer sound
+          playSound(HARMONIOUS_SOUNDS[4], 0.3, 1.5); // Soft chime
           controls.start({
             x: [0, -10, 10, -10, 10, 0],
             transition: { duration: 0.2 }
@@ -102,6 +111,35 @@ export const DopamineSlots: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center p-8 space-y-8 select-none">
+      {/* Auth Status / Login */}
+      <div className="absolute top-4 right-4 z-50">
+        {state.user ? (
+          <div className="flex items-center gap-3 bg-black border-2 border-green-500 p-2 shadow-[4px_4px_0px_rgba(0,0,0,1)]">
+            {state.user.photoURL && (
+              <img src={state.user.photoURL} alt="User" className="w-8 h-8 rounded-full border border-white" referrerPolicy="no-referrer" />
+            )}
+            <div className="text-left">
+              <div className="text-[8px] text-green-500 font-bold uppercase">SECURED BY BLOCKCHAIN</div>
+              <div className="text-[10px] text-white font-black truncate max-w-[100px]">{state.user.email}</div>
+            </div>
+            <button 
+              onClick={logout}
+              className="bg-red-600 p-1 text-white hover:bg-red-500"
+              title="Logout"
+            >
+              <LogOut size={14} />
+            </button>
+          </div>
+        ) : (
+          <button 
+            onClick={login}
+            className="flex items-center gap-2 bg-white border-4 border-black p-2 font-shout text-sm hover:scale-110 transition-transform shadow-[4px_4px_0px_rgba(0,0,0,1)]"
+          >
+            <LogIn size={18} /> ENABLE REAL WITHDRAWALS
+          </button>
+        )}
+      </div>
+
       {/* Jackpot Display */}
       <div className="bg-black border-4 border-yellow-400 p-4 w-full max-w-md shadow-[0_0_20px_rgba(255,255,0,0.5)]">
         <div className="text-center text-yellow-400 font-chaotic text-sm mb-2 animate-pulse">CURRENT JACKPOT:</div>
@@ -141,7 +179,7 @@ export const DopamineSlots: React.FC = () => {
                   <button 
                     onClick={() => {
                         setShowConfirm(false);
-                        playSound(CHAOTIC_SOUNDS[4], 0.5, 2);
+                        playSound(HARMONIOUS_SOUNDS[1], 0.5, 2);
                     }}
                     className="text-[8px] uppercase font-bold text-gray-400 hover:text-black"
                   >
@@ -202,8 +240,8 @@ export const DopamineSlots: React.FC = () => {
                 key={m}
                 onClick={() => {
                   setMultiplier(m);
-                  if (m === 100) playSound(CHAOTIC_SOUNDS[3], 0.3, 0.5); // Horn for max bet
-                  else playSound(CHAOTIC_SOUNDS[5], 0.2, 1.5);
+                  if (m === 100) playSound(HARMONIOUS_SOUNDS[5], 0.3, 0.5); // Dreamy sweep
+                  else playSound(HARMONIOUS_SOUNDS[3], 0.2, 1.5);
                 }}
                 className={`
                   px-3 py-1 font-chaotic text-[10px] border-2 border-transparent transition-all
@@ -236,20 +274,39 @@ export const DopamineSlots: React.FC = () => {
         <div className="bg-black/50 text-white p-2 font-chaotic text-xs animate-blink">
           {message}
         </div>
-        <div className="flex gap-4 text-white font-mono text-xs">
-          <div className="bg-blue-900 border border-blue-400 p-2 flex items-center gap-2">
-            <Coins size={14} className="text-yellow-400" />
-            BALANCE: <span className="text-yellow-400 font-bold">${state.balance}</span>
+        <div className="flex flex-col md:flex-row gap-6 text-white font-shout text-xl">
+          <div className="bg-blue-900 border-4 border-blue-400 p-4 flex flex-col items-center gap-2 shadow-[4px_4px_0px_rgba(0,0,0,1)] transform -rotate-1">
+            <div className="flex items-center gap-2">
+              <Coins size={24} className="text-yellow-400 animate-bounce" />
+              <span>YOUR BALANCE</span>
+            </div>
+            <span className="text-yellow-400 text-5xl font-mono drop-shadow-sm">${state.balance}</span>
+            <button 
+              onClick={() => setIsWithdrawOpen(true)}
+              className="mt-2 w-full bg-yellow-400 text-black font-black text-[10px] py-1 border-2 border-black hover:bg-yellow-300 active:translate-y-1 transition-all flex items-center justify-center gap-1"
+            >
+              <Wallet size={12} /> WITHDRAW COINS
+            </button>
           </div>
-          <div className="bg-purple-900 border border-purple-400 p-2 flex items-center gap-2">
-             <Zap size={14} className="text-cyan-400" />
-             SPINS: <span className="text-cyan-400 font-bold">{state.totalSpins}</span>
+          <div className="bg-purple-900 border-4 border-purple-400 p-4 flex flex-col items-center gap-2 shadow-[4px_4px_0px_rgba(0,0,0,1)] transform rotate-1">
+             <div className="flex items-center gap-2">
+               <Zap size={24} className="text-cyan-400 animate-pulse" />
+               <span>DOPAMINE DOSES</span>
+             </div>
+             <span className="text-cyan-400 text-5xl font-mono drop-shadow-sm">{state.totalSpins}</span>
+          </div>
+          <div className="bg-orange-900 border-4 border-orange-400 p-4 flex flex-col items-center gap-2 shadow-[4px_4px_0px_rgba(0,0,0,1)] transform -rotate-1">
+             <div className="flex items-center gap-2">
+               <Trophy size={24} className="text-white animate-bounce" />
+               <span>WIN STREAK</span>
+             </div>
+             <span className="text-white text-5xl font-mono drop-shadow-sm">{state.winStreak}</span>
           </div>
         </div>
       </div>
 
       {/* Chaotic Ticker underneath */}
-      <div className="w-full bg-white h-6 flex items-center border-2 border-black overflow-hidden italic text-[10px] font-bold text-black">
+      <div className="w-full bg-white h-12 flex items-center border-2 border-black overflow-hidden italic text-[20px] font-bold text-black">
          <motion.div 
            animate={{ x: [1000, -1000] }}
            transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
@@ -258,6 +315,7 @@ export const DopamineSlots: React.FC = () => {
            LAST WINNER: "BigLobbyist" WON $50 AND A VIRTUAL POTATO! — DON'T FORGET TO DRINK WATER (SOLD SEPARATELY) — THE RATIO IS IN YOUR FAVOR* — *terms and conditions apply to your soul.
          </motion.div>
       </div>
+      <WithdrawModal isOpen={isWithdrawOpen} onClose={() => setIsWithdrawOpen(false)} />
     </div>
   );
 };
