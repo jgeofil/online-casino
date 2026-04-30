@@ -12,7 +12,19 @@ interface WithdrawModalProps {
 export const WithdrawModal: React.FC<WithdrawModalProps> = ({ isOpen, onClose }) => {
   const { state, withdraw } = useCasino();
   const [address, setAddress] = useState('');
+  const [isValidAddress, setIsValidAddress] = useState(false);
   const [amount, setAmount] = useState<number>(0);
+
+  const validateAddress = (addr: string) => {
+    // Regex for basic Ethereum/Base address validation (0x followed by 40 hex chars)
+    const ethRegex = /^0x[a-fA-F0-9]{40}$/;
+    return ethRegex.test(addr);
+  };
+
+  const handleAddressChange = (val: string) => {
+    setAddress(val);
+    setIsValidAddress(validateAddress(val));
+  };
   const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [txHash, setTxHash] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -62,8 +74,18 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({ isOpen, onClose })
           </button>
 
           <div className="flex items-center gap-3 mb-6">
-            <Wallet className="text-blue-600" size={32} />
-            <h2 className="text-3xl font-black uppercase italic leading-tight">Withdrawal Portal</h2>
+            <div className="relative">
+              <Wallet className="text-blue-600" size={32} />
+              <div className="absolute -top-2 -right-2 bg-blue-500 rounded-full p-1 animate-pulse">
+                <div className="w-2 h-2 bg-white rounded-full" />
+              </div>
+            </div>
+            <div>
+              <h2 className="text-3xl font-black uppercase italic leading-tight">Withdrawal Portal</h2>
+              <div className="flex items-center gap-1 text-[8px] font-bold text-blue-600 uppercase tracking-widest">
+                Powered by Coinbase Onchain SDK
+              </div>
+            </div>
           </div>
 
           {!state.user ? (
@@ -90,15 +112,24 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({ isOpen, onClose })
               )}
 
               <div className="space-y-1">
-                <label className="text-[10px] font-black uppercase text-gray-500">Destination Address (CUSTOM COIN ADDR)</label>
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] font-black uppercase text-gray-500">Destination Address (BASE/ETH ADDR)</label>
+                  {address && (
+                    <span className={`text-[8px] font-bold uppercase ${isValidAddress ? 'text-green-600' : 'text-red-600'}`}>
+                      {isValidAddress ? '✓ Valid Format' : '✗ Invalid Format'}
+                    </span>
+                  )}
+                </div>
                 <input 
                   type="text" 
                   autoFocus
                   required
-                  placeholder="0x... or DOPAMINE_ADDR_..."
+                  placeholder="0x..."
                   value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="w-full bg-gray-100 border-4 border-black p-3 font-mono text-xs focus:bg-white focus:outline-none transition-colors"
+                  onChange={(e) => handleAddressChange(e.target.value)}
+                  className={`w-full bg-gray-100 border-4 p-3 font-mono text-xs focus:bg-white focus:outline-none transition-colors ${
+                    address ? (isValidAddress ? 'border-green-500' : 'border-red-500') : 'border-black'
+                  }`}
                 />
               </div>
 
@@ -123,10 +154,14 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({ isOpen, onClose })
 
               <button 
                 type="submit"
-                disabled={status === 'processing'}
-                className="w-full bg-blue-600 text-white font-black py-4 border-4 border-black shadow-[8px_8px_0px_rgba(0,0,0,1)] hover:bg-blue-500 active:translate-x-1 active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 text-xl"
+                disabled={status === 'processing' || !isValidAddress || amount <= 0}
+                className={`w-full font-black py-4 border-4 border-black shadow-[8px_8px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2 text-xl ${
+                  status === 'processing' || !isValidAddress || amount <= 0
+                    ? 'bg-gray-400 cursor-not-allowed opacity-70 grayscale'
+                    : 'bg-blue-600 text-white hover:bg-blue-500 active:translate-x-1 active:translate-y-1 active:shadow-none'
+                }`}
               >
-                INITIATE TRANSFER <ArrowRight />
+                {isValidAddress ? 'INITIATE TRANSFER' : 'INVALID ADDRESS'} <ArrowRight />
               </button>
             </form>
           ) : status === 'processing' ? (

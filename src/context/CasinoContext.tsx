@@ -152,30 +152,26 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (!state.user) return { success: false, error: 'AUTH_REQUIRED' };
 
     try {
-      const batch = writeBatch(db);
-      const withdrawalRef = doc(collection(db, 'withdrawals'));
-      const userRef = doc(db, 'users', state.user.uid);
+      const idToken = await auth.currentUser?.getIdToken();
 
-      const withdrawalData = {
-        userId: state.user.uid,
-        address,
-        amount,
-        status: 'pending',
-        createdAt: serverTimestamp()
-      };
-
-      batch.set(withdrawalRef, withdrawalData);
-      batch.update(userRef, {
-        balance: state.balance - amount,
-        updatedAt: serverTimestamp()
+      const response = await fetch('/api/withdraw', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ amount, address, idToken }),
       });
 
-      await batch.commit();
+      const result = await response.json();
 
-      return { success: true, hash: withdrawalRef.id };
-    } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, 'batch/withdrawal');
-      return { success: false, error: 'BLOCKCHAIN_REJECTION' };
+      if (response.ok && result.success) {
+        return { success: true, hash: result.hash };
+      } else {
+        return { success: false, error: result.error || 'WITHDRAWAL_FAILED' };
+      }
+    } catch (error: any) {
+      console.error("Fetch error:", error);
+      return { success: false, error: 'NETWORK_ERROR' };
     }
   }, [state.balance, state.user]);
 
